@@ -13,6 +13,7 @@ const App = () => {
   const [isPlaying, setIsPlaying] = useState(false)
   const [gameOver, setGameOver] = useState(false)
   const [highScore, setHighScore] = useState(0)
+  const [userClicked, setUserClicked] = useState(false)
 
   useEffect(() => {
     if (darkMode) {
@@ -25,7 +26,10 @@ const App = () => {
   useEffect(() => {
     let timer
     if (isPlaying && !gameOver) {
-      timer = setTimeout(selectNextColor, 1000)
+      timer = setTimeout(() => {
+        selectNextColor()
+        setUserClicked(false)
+      }, 600)
     }
     return () => clearTimeout(timer)
   }, [isPlaying, gameOver, currentIndex])
@@ -47,6 +51,9 @@ const App = () => {
     } else {
       setSelectedColor(sequence[currentIndex])
       setCurrentIndex(prevIndex => prevIndex + 1)
+      setTimeout(() => {
+        setSelectedColor(null)
+      }, 400)
     }
   }
 
@@ -55,14 +62,22 @@ const App = () => {
     setSequence(prevSequence => [...prevSequence, randomColor])
     setCurrentIndex(0)
     setSelectedColor(randomColor)
+  /
+    setTimeout(() => {
+      setSelectedColor(null)
+    }, 400)
   }
 
   const handleColorClick = (color) => {
     if (!isPlaying || gameOver) return
 
-    if (color === selectedColor) {
+    setUserClicked(true)
+
+    if (color === sequence[currentIndex - 1]) {
       setScore(prevScore => prevScore + 1)
-      selectNextColor()
+      if (currentIndex === sequence.length) {
+        setTimeout(selectNextColor, 300)
+      }
     } else {
       setLives(prevLives => prevLives - 1)
       if (lives === 1) {
@@ -78,6 +93,7 @@ const App = () => {
     setScore(0)
     setGameOver(false)
     setIsPlaying(true)
+    setUserClicked(false)
     addToSequence()
   }
 
@@ -106,21 +122,25 @@ const App = () => {
       <div className="grid grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mb-8 sm:mb-10">
         {colors.map((color) => (
           <button
-            key={color}
-            onClick={() => handleColorClick(color)}
-            disabled={!isPlaying || gameOver}
-            className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full transition-all hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50 ${
-              color === 'red' ? `bg-red-500 focus:ring-red-300 ${darkMode ? 'dark:bg-red-700 dark:focus:ring-red-500' : ''}` :
-              color === 'blue' ? `bg-blue-500 focus:ring-blue-300 ${darkMode ? 'dark:bg-blue-700 dark:focus:ring-blue-500' : ''}` :
-              color === 'green' ? `bg-green-500 focus:ring-green-300 ${darkMode ? 'dark:bg-green-700 dark:focus:ring-green-500' : ''}` :
-              color === 'yellow' ? `bg-yellow-500 focus:ring-yellow-300 ${darkMode ? 'dark:bg-yellow-600 dark:focus:ring-yellow-400' : ''}` :
-              color === 'purple' ? `bg-purple-500 focus:ring-purple-300 ${darkMode ? 'dark:bg-purple-700 dark:focus:ring-purple-500' : ''}` :
-              color === 'orange' ? `bg-orange-500 focus:ring-orange-300 ${darkMode ? 'dark:bg-orange-700 dark:focus:ring-orange-500' : ''}` :
-              color === 'pink' ? `bg-pink-500 focus:ring-pink-300 ${darkMode ? 'dark:bg-pink-700 dark:focus:ring-pink-500' : ''}` :
-              color === 'cyan' ? `bg-cyan-500 focus:ring-cyan-300 ${darkMode ? 'dark:bg-cyan-700 dark:focus:ring-cyan-500' : ''}` :
-              `bg-indigo-500 focus:ring-indigo-300 ${darkMode ? 'dark:bg-indigo-700 dark:focus:ring-indigo-500' : ''}`
-            } ${selectedColor === color ? 'ring-4 ring-white dark:ring-gray-300 scale-110' : ''} ${(!isPlaying || gameOver) ? 'opacity-50 cursor-not-allowed' : ''}`}
+          key={color}
+          onClick={() => handleColorClick(color)}
+          disabled={!isPlaying || gameOver}
+          className={`w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 rounded-full transition-all hover:scale-105 
+            ${color === 'red' ? `bg-red-500 ${!userClicked ? 'focus:ring-red-300' : ''} ${darkMode ? 'dark:bg-red-700' : ''}` :
+            color === 'blue' ? `bg-blue-500 ${!userClicked ? 'focus:ring-blue-300' : ''} ${darkMode ? 'dark:bg-blue-700' : ''}` :
+            color === 'green' ? `bg-green-500 ${!userClicked ? 'focus:ring-green-300' : ''} ${darkMode ? 'dark:bg-green-700' : ''}` :
+            color === 'yellow' ? `bg-yellow-500 ${!userClicked ? 'focus:ring-yellow-300' : ''} ${darkMode ? 'dark:bg-yellow-600' : ''}` :
+            color === 'purple' ? `bg-purple-500 ${!userClicked ? 'focus:ring-purple-300' : ''} ${darkMode ? 'dark:bg-purple-700' : ''}` :
+            color === 'orange' ? `bg-orange-500 ${!userClicked ? 'focus:ring-orange-300' : ''} ${darkMode ? 'dark:bg-orange-700' : ''}` :
+            color === 'pink' ? `bg-pink-500 ${!userClicked ? 'focus:ring-pink-300' : ''} ${darkMode ? 'dark:bg-pink-700' : ''}` :
+            color === 'cyan' ? `bg-cyan-500 ${!userClicked ? 'focus:ring-cyan-300' : ''} ${darkMode ? 'dark:bg-cyan-700' : ''}` :
+            `bg-indigo-500 ${!userClicked ? 'focus:ring-indigo-300' : ''} ${darkMode ? 'dark:bg-indigo-700' : ''}`
+            } 
+            ${selectedColor === color ? 'ring-4 ring-white dark:ring-gray-300 scale-110' : ''} 
+            ${(!isPlaying || gameOver) ? 'opacity-50 cursor-not-allowed' : ''} 
+            focus:outline-none`}
           />
+        
         ))}
       </div>
       <button
